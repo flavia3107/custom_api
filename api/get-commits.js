@@ -6,18 +6,27 @@ export default async function handler(req, res) {
 
 	if (req.method === 'OPTIONS') return res.status(200).end();
 
-	const { user, repo, action } = req.query;
-
+	const { user, repo, action, since, until } = req.query;
 	const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 	if (!GITHUB_TOKEN) return res.status(500).json({ error: 'Server token missing.' });
 
 	let targetUrl = '';
 	if (action === 'repoDetails') {
-		if (!user || !repo) return res.status(400).json({ error: 'Missing user or repo parameter' });
+		if (!user || !repo) return res.status(400).json({ error: 'Missing parameters' });
 		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}`;
+
 	} else if (action === 'languages') {
-		if (!user || !repo) return res.status(400).json({ error: 'Missing user or repo parameter' });
+		if (!user || !repo) return res.status(400).json({ error: 'Missing parameters' });
 		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/languages`;
+
+	} else if (action === 'weeklyStats') {
+		if (!user || !repo) return res.status(400).json({ error: 'Missing parameters' });
+		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/stats/participation`;
+
+	} else if (action === 'filteredCommits') {
+		if (!user || !repo) return res.status(400).json({ error: 'Missing parameters' });
+		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/commits?since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}&per_page=1000`;
+
 	} else {
 		if (!user) return res.status(400).json({ error: 'Missing user parameter' });
 		targetUrl = `https://api.github.com/search/commits?q=author:${encodeURIComponent(user)}`;
