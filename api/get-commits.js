@@ -2,17 +2,29 @@ export default async function handler(req, res) {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+	res.setHeader('Content-Type', 'application/json');
 
 	if (req.method === 'OPTIONS') return res.status(200).end();
 
-	const { user } = req.query;
-	if (!user) return res.status(400).json({ error: 'Missing user parameter' });
+	const { user, repo, action } = req.query;
 
 	const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-	if (!GITHUB_TOKEN) return res.status(500).json({ error: 'Server misconfiguration: Token missing.' });
+	if (!GITHUB_TOKEN) return res.status(500).json({ error: 'Server token missing.' });
+
+	let targetUrl = '';
+	if (action === 'repoDetails') {
+		if (!user || !repo) return res.status(400).json({ error: 'Missing user or repo parameter' });
+		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}`;
+	} else if (action === 'languages') {
+		if (!user || !repo) return res.status(400).json({ error: 'Missing user or repo parameter' });
+		targetUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/languages`;
+	} else {
+		if (!user) return res.status(400).json({ error: 'Missing user parameter' });
+		targetUrl = `https://api.github.com/search/commits?q=author:${encodeURIComponent(user)}`;
+	}
 
 	try {
-		const response = await fetch(`https://api.github.com/search/commits?q=author:${encodeURIComponent(user)}`, {
+		const response = await fetch(targetUrl, {
 			headers: {
 				'Authorization': `Bearer ${GITHUB_TOKEN}`,
 				'Accept': 'application/vnd.github+json',
