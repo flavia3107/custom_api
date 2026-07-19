@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 	if (req.method === 'OPTIONS') return res.status(200).end();
 
 	const { action, language, category, country, keyword, sentiment } = req.query;
-	const APITUBE_KEY = process.env.APITUBE_API_KEY;
+	const APITUBE_KEY = process.env.APITube;
 
 	if (!APITUBE_KEY) return res.status(500).json({ error: 'Server token configuration missing.' });
 
