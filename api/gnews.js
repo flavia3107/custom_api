@@ -6,14 +6,14 @@ export default async function handler(req, res) {
 
 	if (req.method === 'OPTIONS') return res.status(200).end();
 
-	const GNEWS_KEY = process.env.GNEWS_KEY;
+	const GNEWS_KEY = process.env.GNEWS;
 	if (!GNEWS_KEY) return res.status(500).json({ error: 'Server token configuration missing.' });
 
 
 	const { search, lang = 'en', country = 'us', category = 'general', max = '10' } = req.query;
 	const endpoint = search ? 'search' : 'top-headlines';
 	const baseUrl = `https://gnews.io/api/v4/${endpoint}`;
-	const queryParams = new URLSearchParams({ apikey: GNEWS, lang, country, max });
+	const queryParams = new URLSearchParams({ apikey: GNEWS_KEY, lang, country, max });
 
 	if (search) queryParams.append('q', `"${search}"`);
 	else queryParams.append('category', category);
